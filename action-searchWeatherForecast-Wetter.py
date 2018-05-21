@@ -33,6 +33,6 @@ def subscribe_intent_callback(hermes, intentMessage):
 
 if __name__ == "__main__":
     conf = read_configuration_file(CONFIG_INI)
-    wether = Weather(conf)
+    weather = Weather(conf)
     with Hermes("localhost:1883") as h:
         h.subscribe_intents(subscribe_intent_callback).start()
