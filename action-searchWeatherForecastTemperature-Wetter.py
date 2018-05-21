@@ -6,6 +6,7 @@ from hermes_python.hermes import Hermes
 from hermes_python.ontology import *
 import io
 import random  # for random answer forms
+import weather as Weather
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
@@ -33,6 +34,6 @@ def subscribe_intent_callback(hermes, intentMessage):
 
 if __name__ == "__main__":
     conf = read_configuration_file(CONFIG_INI)
-    wether = Weather(conf)
+    weather = Weather(conf)
     with Hermes("localhost:1883") as h:
         h.subscribe_intents(subscribe_intent_callback).start()
