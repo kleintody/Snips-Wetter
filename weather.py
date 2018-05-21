@@ -43,7 +43,7 @@ class Weather:
                      intentMessage.slots.forecast_region.first().value,
                      intentMessage.slots.forecast_geographical_poi.first().value,
                      self.default_city_name]
-        location = [loc for loc in locations if loc not None][0]
+        location = [loc for loc in locations if loc is not None][0]
         print(location)
         """
         location = slots.get("forecast_locality", None) \
