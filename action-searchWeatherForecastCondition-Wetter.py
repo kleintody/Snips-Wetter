@@ -6,7 +6,7 @@ from hermes_python.hermes import Hermes
 from hermes_python.ontology import *
 import io
 import random  # for random answer forms
-import weather as Weather
+from weather import Weather
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
