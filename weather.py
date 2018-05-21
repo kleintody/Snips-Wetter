@@ -46,7 +46,7 @@ class Weather:
         except KeyError:  # error 404 (locality not found or api key is wrong)
             return 2
 
-    def get_weather_forecast(self, slots):
+    def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
         locations = [intentMessage.slots.forecast_locality.first().value,
                      intentMessage.slots.forecast_country.first().value,
