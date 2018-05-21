@@ -7,9 +7,18 @@ class Weather:
     def __init__(self, config):
         self.fromtimestamp = datetime.datetime.fromtimestamp
         self.weather_api_base_url = "http://api.openweathermap.org/data/2.5"
-        self.weather_api_key = config['openweathermap_api_key']
-        self.default_city_name = config['default_city']
-        self.units = config['units']
+        try:
+            self.weather_api_key = config['openweathermap_api_key']
+        except KeyError:
+            self.weather_api_key = "XXXXXXXXXXXXXXXXXXXXX"
+        try:
+            self.default_city_name = config['default_city']
+        except KeyError:
+            self.default_city_name = "Berlin"
+        try:
+            self.units = config['units']
+        except KeyError:
+            self.units = "metric"
 
     def parse_open_weather_map_forecast_response(self, response, location):
         # Parse the output of Open Weather Map's forecast endpoint
