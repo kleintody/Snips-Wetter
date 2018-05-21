@@ -48,12 +48,15 @@ class Weather:
 
     def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
-        locations = [intentMessage.slots.forecast_locality.first().value,
-                     intentMessage.slots.forecast_country.first().value,
-                     intentMessage.slots.forecast_region.first().value,
-                     intentMessage.slots.forecast_geographical_poi.first().value,
-                     self.default_city_name]
-        location = [loc for loc in locations if loc is not None][0]
+        locations = [intentMessage.slots.forecast_locality.first(),
+                     intentMessage.slots.forecast_country.first(),
+                     intentMessage.slots.forecast_region.first(),
+                     intentMessage.slots.forecast_geographical_poi.first()]
+        location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
+        if location_objects:
+            location = location_objects[0].value
+        else:
+            location = self.default_city_name
         print(location)
         """
         location = slots.get("forecast_locality", None) \
