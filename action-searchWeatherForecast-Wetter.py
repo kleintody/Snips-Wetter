@@ -26,14 +26,12 @@ def read_configuration_file(configuration_file):
         return dict()
 
 def subscribe_intent_callback(hermes, intentMessage):
-    user,intentname = intentMessage.intent.intent_name.split(':')  # the user can fork the intent with this method
-    if intentname == "searchWeatherForecast":
-        conf = read_configuration_file(CONFIG_INI)
-        hermes.publish_end_session(intentMessage.session_id, weather.forecast(intentMessage))
+    conf = read_configuration_file(CONFIG_INI)
+    hermes.publish_end_session(intentMessage.session_id, weather.forecast(intentMessage))
 
 
 if __name__ == "__main__":
     conf = read_configuration_file(CONFIG_INI)
     weather = Weather(conf)
     with Hermes("localhost:1883") as h:
-        h.subscribe_intents(subscribe_intent_callback).start()
+        h.subscribe_intent("domi:searchWeatherForecast", subscribe_intent_callback).start()
