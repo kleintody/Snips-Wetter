@@ -18,10 +18,10 @@ class SnipsConfigParser(ConfigParser.SafeConfigParser):
 
 def read_configuration_file(configuration_file):
     try:
-    with io.open(configuration_file, encoding=CONFIGURATION_ENCODING_FORMAT) as f:
-        conf_parser = SnipsConfigParser()
-        conf_parser.readfp(f)
-        return conf_parser.to_dict()
+        with io.open(configuration_file, encoding=CONFIGURATION_ENCODING_FORMAT) as f:
+            conf_parser = SnipsConfigParser()
+            conf_parser.readfp(f)
+            return conf_parser.to_dict()
     except (IOError, ConfigParser.Error) as e:
         return dict()
 
