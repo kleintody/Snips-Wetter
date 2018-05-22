@@ -112,7 +112,7 @@ class Weather:
                 weather_forecast["inLocation"],
                 weather_forecast["temperature"],
                 weather_forecast["temperatureMax"],
-                weather_forecast["temperatureMin"].decode('utf8')
+                str(weather_forecast["temperatureMin"]).decode('utf8')
             )
             response = self.add_warning_if_needed(response, weather_forecast)
         return response
