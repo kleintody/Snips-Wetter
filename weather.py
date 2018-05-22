@@ -104,7 +104,7 @@ class Weather:
                 weather_forecast["mainCondition"].encode('utf8'),
                 weather_forecast["inLocation"].encode('utf8'),
                 weather_forecast["temperature"],
-                weather_forecast["temperatureMax"].encode('utf8'),
+                weather_forecast["temperatureMax"],
                 weather_forecast["temperatureMin"].encode('utf8')
             )
             response = self.add_warning_if_needed(response, weather_forecast)
@@ -142,7 +142,7 @@ class Weather:
                         "und die Tiefsttemperatur {3} Grad.").format(
                 weather_forecast["inLocation"].encode('utf8'),
                 weather_forecast["temperature"],
-                weather_forecast["temperatureMax"].encode('utf8'),
+                weather_forecast["temperatureMax"],
                 weather_forecast["temperatureMin"].encode('utf8')
             )
         return response
