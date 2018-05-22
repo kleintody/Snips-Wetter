@@ -103,7 +103,7 @@ class Weather:
                         "Tiefsttemperatur: {4} Grad.").format(
                 weather_forecast["mainCondition"].encode('utf8'),
                 weather_forecast["inLocation"].encode('utf8'),
-                weather_forecast["temperature"].encode('utf8'),
+                weather_forecast["temperature"],
                 weather_forecast["temperatureMax"].encode('utf8'),
                 weather_forecast["temperatureMin"].encode('utf8')
             )
@@ -141,7 +141,7 @@ class Weather:
                         "Heute wird die Höchsttemperatur {2} Grad sein "
                         "und die Tiefsttemperatur {3} Grad.").format(
                 weather_forecast["inLocation"].encode('utf8'),
-                weather_forecast["temperature"].encode('utf8'),
+                weather_forecast["temperature"],
                 weather_forecast["temperatureMax"].encode('utf8'),
                 weather_forecast["temperatureMin"].encode('utf8')
             )
