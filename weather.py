@@ -102,10 +102,10 @@ class Weather:
                         "Höchsttemperatur: {3} Grad. "
                         "Tiefsttemperatur: {4} Grad.").format(
                 weather_forecast["mainCondition"].encode('utf8'),
-                str(weather_forecast["inLocation"]).decode('utf8'),
-                str(weather_forecast["temperature"]).decode('utf8'),
-                str(weather_forecast["temperatureMax"]).decode('utf8'),
-                str(weather_forecast["temperatureMin"]).decode('utf8')
+                weather_forecast["inLocation"].encode('utf8'),
+                weather_forecast["temperature"].encode('utf8'),
+                weather_forecast["temperatureMax"].encode('utf8'),
+                weather_forecast["temperatureMin"].encode('utf8')
             )
             response = self.add_warning_if_needed(response, weather_forecast)
         return response
@@ -121,8 +121,8 @@ class Weather:
             response = self.error_response(weather_forecast)
         else:
             response = "Wetter heute{1}: {0}.".format(
-                weather_forecast["mainCondition"],
-                weather_forecast["inLocation"]
+                weather_forecast["mainCondition"].encode('utf8'),
+                weather_forecast["inLocation"].encode('utf8')
             )
             response = self.add_warning_if_needed(response, weather_forecast)
         return response
@@ -140,9 +140,9 @@ class Weather:
             response = ("{0} hat es aktuell {1} Grad. "
                         "Heute wird die Höchsttemperatur {2} Grad sein "
                         "und die Tiefsttemperatur {3} Grad.").format(
-                str(weather_forecast["inLocation"]).decode('utf8'),
-                str(weather_forecast["temperature"]).decode('utf8'),
-                str(weather_forecast["temperatureMax"]).decode('utf8'),
-                str(weather_forecast["temperatureMin"]).decode('utf8')
+                weather_forecast["inLocation"].encode('utf8'),
+                weather_forecast["temperature"].encode('utf8'),
+                weather_forecast["temperatureMax"].encode('utf8'),
+                weather_forecast["temperatureMin"].encode('utf8')
             )
         return response
