@@ -45,6 +45,17 @@ class Weather:
             }
         except KeyError:  # error 404 (locality not found or api key is wrong)
             return 2
+    
+    def error_response(self, error_num):
+        if error_num == 1:
+            return random.choice(["Es ist leider kein Internet verfügbar.",
+                                  "Ich bin nicht mit dem Internet verbunden.",
+                                  "Es ist kein Internet vorhanden."])
+        elif error_num == 2:
+            return random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
+                                  "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."])
+        else:
+            return random.choide(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
 
     def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
@@ -90,12 +101,8 @@ class Weather:
                     - warning about rain or snow if needed
         """
         weather_forecast = self.get_weather_forecast(intentMessage)
-        if weather_forecast == 1:
-            response = ["Es ist leider kein Internet verfügbar.",
-                        "Ich bin nicht mit dem Internet verbunden.",
-                        "Es ist kein Internet vorhanden."]
-        elif weather_forecast == 2:
-            response = ["Ich kann das Wetter von diesem Ort nicht abrufen."]
+        if weather_forecast == 1 or weather_forecast == 2:
+            response = self.error_response(weather_forecast)
         else:
             response = ("Wetter heute{1}: {0}. "
                         "Aktuelle Temperatur ist {2} Grad. "
@@ -117,13 +124,8 @@ class Weather:
             - warning about rain or snow if needed
         """
         weather_forecast = self.get_weather_forecast(intentMessage)
-        if weather_forecast == 1:
-            response = ["Es ist leider kein Internet verfügbar.",
-                        "Ich bin nicht mit dem Internet verbunden.",
-                        "Es ist kein Internet vorhanden."]
-        elif weather_forecast == 2:
-            response = ["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
-                        "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."]
+        if weather_forecast == 1 or weather_forecast == 2:
+            response = self.error_response(weather_forecast)
         else:
             response = "Wetter heute{1}: {0}.".format(
                 weather_forecast["mainCondition"],
@@ -139,13 +141,8 @@ class Weather:
             - max and min temperature
         """
         weather_forecast = self.get_weather_forecast(intentMessage)
-        if weather_forecast == 1:
-            response = ["Es ist leider kein Internet verfügbar.",
-                        "Ich bin nicht mit dem Internet verbunden.",
-                        "Es ist kein Internet vorhanden."]
-        elif weather_forecast == 2:
-            response = ["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
-                        "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."]
+        if weather_forecast == 1 or weather_forecast == 2:
+            response = self.error_response(weather_forecast)
         else:
             response = ("{0} hat es aktuell {1} Grad. "
                         "Heute wird die Höchsttemperatur {2} Grad sein "

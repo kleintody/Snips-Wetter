@@ -29,7 +29,7 @@ def subscribe_intent_callback(hermes, intentMessage):
     user,intentname = intentMessage.intent.intent_name.split(':')  # the user can fork the intent with this method
     if intentname == "searchWeatherForecastTemperature":
         conf = read_configuration_file(CONFIG_INI)
-        hermes.publish_end_session(intentMessage.session_id, random.choice(weather.forecast_temperature(intentMessage)))
+        hermes.publish_end_session(intentMessage.session_id, weather.forecast_temperature(intentMessage))
 
 
 if __name__ == "__main__":
