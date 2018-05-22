@@ -19,6 +19,7 @@ class Weather:
             self.units = config['units']
         except KeyError:
             self.units = "metric"
+        print(config)
 
     def parse_open_weather_map_forecast_response(self, response, location):
         # Parse the output of Open Weather Map's forecast endpoint
