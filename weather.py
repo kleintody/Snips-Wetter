@@ -8,15 +8,15 @@ class Weather:
         self.fromtimestamp = datetime.datetime.fromtimestamp
         self.weather_api_base_url = "http://api.openweathermap.org/data/2.5"
         try:
-            self.weather_api_key = config['openweathermap_api_key']
+            self.weather_api_key = config['secret']['openweathermap_api_key']
         except KeyError:
             self.weather_api_key = "XXXXXXXXXXXXXXXXXXXXX"
         try:
-            self.default_city_name = config['default_city']
+            self.default_city_name = config['secret']['default_city']
         except KeyError:
             self.default_city_name = "Berlin"
         try:
-            self.units = config['units']
+            self.units = config['global']['units']
         except KeyError:
             self.units = "metric"
 
