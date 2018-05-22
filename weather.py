@@ -101,7 +101,7 @@ class Weather:
                         "Aktuelle Temperatur ist {2} Grad. "
                         "Höchsttemperatur: {3} Grad. "
                         "Tiefsttemperatur: {4} Grad.").format(
-                str(weather_forecast["mainCondition"]).decode('utf8'),
+                weather_forecast["mainCondition"].encode('utf8'),
                 str(weather_forecast["inLocation"]).decode('utf8'),
                 str(weather_forecast["temperature"]).decode('utf8'),
                 str(weather_forecast["temperatureMax"]).decode('utf8'),
