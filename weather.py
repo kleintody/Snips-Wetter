@@ -49,9 +49,9 @@ class Weather:
     
     def error_response(self, error_num):
         if error_num == 1:
-            return random.choice(["Es ist leider kein Internet verfügbar.",
-                                  "Ich bin nicht mit dem Internet verbunden.",
-                                  "Es ist kein Internet vorhanden."])
+            return "Schau doch aus dem Fenster. " + random.choice(["Es ist leider kein Internet verfügbar.",
+                                                                   "Ich bin nicht mit dem Internet verbunden.",
+                                                                   "Es ist kein Internet vorhanden."])
         elif error_num == 2:
             return random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
                                   "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."])
