@@ -60,7 +60,7 @@ class Weather:
 
     def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
-        print(intentMessage.slots.items())
+        print(intentMessage.slots.forecast_locality.first().value)
         """
         for (slot_value, slot) in intentMessage.slots.items():
             print('Slot {} -> \n\tRaw: {} \tValue: {}'.format(slot_value, slot[0].raw_value,
