@@ -56,14 +56,14 @@ class Weather:
             return random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
                                   "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."])
         else:
-            return random.choide(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
+            return random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
 
     def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
-        locations = [intentMessage.slots.forecast_locality.first(),
-                     intentMessage.slots.forecast_country.first(),
-                     intentMessage.slots.forecast_region.first(),
-                     intentMessage.slots.forecast_geographical_poi.first()]
+        locations = [intentMessage.slots.forecast_locality.first().value,
+                     intentMessage.slots.forecast_country.first().value,
+                     intentMessage.slots.forecast_region.first().value,
+                     intentMessage.slots.forecast_geographical_poi.first().value]
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
             location = location_objects[0].value
