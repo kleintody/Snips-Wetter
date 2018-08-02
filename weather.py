@@ -77,7 +77,6 @@ class Weather:
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
             location = location_objects[0].value
-            print("Location: ", location)
         else:
             location = self.default_city_name
         print(location)
