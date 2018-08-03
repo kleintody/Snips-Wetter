@@ -47,16 +47,19 @@ class Weather:
         except KeyError:  # error 404 (locality not found or api key is wrong)
             return 2
     
-    def error_response(self, error_num):
+    def error_response(self, error_num, location):
         if error_num == 1:
-            return "Schau doch aus dem Fenster. " + random.choice(["Es ist leider kein Internet verfügbar.",
-                                                                   "Ich bin nicht mit dem Internet verbunden.",
-                                                                   "Es ist kein Internet vorhanden."])
+            response = random.choice(["Es ist leider kein Internet verfügbar.",
+                                      "Ich bin nicht mit dem Internet verbunden.",
+                                      "Es ist kein Internet vorhanden."])
+            if location == self.default_city_name:
+                response = "Schau doch aus dem Fenster. " + response
         elif error_num == 2:
-            return random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
+            response = random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
                                   "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."])
         else:
-            return random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
+            response = random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
+        return response
 
     def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
@@ -74,7 +77,7 @@ class Weather:
             self.weather_api_base_url, location, self.weather_api_key, self.units)
         try:
             r_forecast = requests.get(forecast_url)
-            return self.parse_open_weather_map_forecast_response(r_forecast.json(), location)
+            return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
         except (requests.exceptions.ConnectionError, ValueError):
             return 1  # Error: No internet connection
 
@@ -94,9 +97,9 @@ class Weather:
                     - max and min temperature
                     - warning about rain or snow if needed
         """
-        weather_forecast = self.get_weather_forecast(intentMessage)
+        weather_forecast, location = self.get_weather_forecast(intentMessage)
         if weather_forecast == 1 or weather_forecast == 2:
-            response = self.error_response(weather_forecast)
+            response = self.error_response(weather_forecast, location)
         else:
             response = ("Wetter heute{1}: {0}. "
                         "Aktuelle Temperatur ist {2} Grad. "
@@ -117,9 +120,9 @@ class Weather:
             - condition
             - warning about rain or snow if needed
         """
-        weather_forecast = self.get_weather_forecast(intentMessage)
+        weather_forecast, location = self.get_weather_forecast(intentMessage)
         if weather_forecast == 1 or weather_forecast == 2:
-            response = self.error_response(weather_forecast)
+            response = self.error_response(weather_forecast, location)
         else:
             response = "Wetter heute{1}: {0}.".format(
                 weather_forecast["mainCondition"],
@@ -134,9 +137,9 @@ class Weather:
             - current temperature
             - max and min temperature
         """
-        weather_forecast = self.get_weather_forecast(intentMessage)
+        weather_forecast, location = self.get_weather_forecast(intentMessage)
         if weather_forecast == 1 or weather_forecast == 2:
-            response = self.error_response(weather_forecast)
+            response = self.error_response(weather_forecast, location)
         else:
             response = ("{0} hat es aktuell {1} Grad. "
                         "Heute wird die Höchsttemperatur {2} Grad sein "
