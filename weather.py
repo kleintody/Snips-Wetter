@@ -71,8 +71,6 @@ class Weather:
             location = location_objects[0].value
         else:
             location = self.default_city_name
-        print(location)
-        print("API: ", self.weather_api_key)
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location, self.weather_api_key, self.units)
         try:
