@@ -60,17 +60,6 @@ class Weather:
 
     def get_weather_forecast(self, intentMessage):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
-        """
-        print(intentMessage.slots.forecast_locality.first().value)
-        for (slot_value, slot) in intentMessage.slots.items():
-            print('Slot {} -> \n\tRaw: {} \tValue: {}'.format(slot_value, slot[0].raw_value,
-                                                              slot[0].slot_value.value.value))
-
-        locations = [intentMessage.slots.forecast_locality.first().value,
-                     intentMessage.slots.forecast_country.first().value,
-                     intentMessage.slots.forecast_region.first().value,
-                     intentMessage.slots.forecast_geographical_poi.first().value]
-        """
         locations = []
         for (slot_value, slot) in intentMessage.slots.items():
             locations.append(slot[0].slot_value.value)
@@ -113,8 +102,8 @@ class Weather:
                         "Aktuelle Temperatur ist {2} Grad. "
                         "Höchsttemperatur: {3} Grad. "
                         "Tiefsttemperatur: {4} Grad.").format(
-                weather_forecast["mainCondition"].encode('utf8'),
-                weather_forecast["inLocation"].encode('utf8'),
+                weather_forecast["mainCondition"],
+                weather_forecast["inLocation"],
                 weather_forecast["temperature"],
                 weather_forecast["temperatureMax"],
                 weather_forecast["temperatureMin"]
@@ -133,8 +122,8 @@ class Weather:
             response = self.error_response(weather_forecast)
         else:
             response = "Wetter heute{1}: {0}.".format(
-                weather_forecast["mainCondition"].encode('utf8'),
-                weather_forecast["inLocation"].encode('utf8')
+                weather_forecast["mainCondition"],
+                weather_forecast["inLocation"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
         return response
@@ -152,7 +141,7 @@ class Weather:
             response = ("{0} hat es aktuell {1} Grad. "
                         "Heute wird die Höchsttemperatur {2} Grad sein "
                         "und die Tiefsttemperatur {3} Grad.").format(
-                weather_forecast["inLocation"].encode('utf8'),
+                weather_forecast["inLocation"],
                 weather_forecast["temperature"],
                 weather_forecast["temperatureMax"],
                 weather_forecast["temperatureMin"]
