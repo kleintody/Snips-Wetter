@@ -30,7 +30,7 @@ class Weather:
 
             all_min = [x["main"]["temp_min"] for x in today_forecasts]
             all_max = [x["main"]["temp_max"] for x in today_forecasts]
-            all_conditions = [x["weather"][0]["description"] for x in today_forecasts]
+            all_conditions = [x["weather"][0]["description"].encode('utf8') for x in today_forecasts]
             print("All conditions: ", all_conditions)
             rain = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Rain", today_forecasts))
             snow = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Snow", today_forecasts))
