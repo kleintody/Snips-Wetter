@@ -99,6 +99,7 @@ class Weather:
         if weather_forecast == 1 or weather_forecast == 2:
             response = self.error_response(weather_forecast, location)
         else:
+            print(weather_forecast)
             response = ("Wetter heute{1}: {0}. "
                         "Aktuelle Temperatur ist {2} Grad. "
                         "Höchsttemperatur: {3} Grad. "
