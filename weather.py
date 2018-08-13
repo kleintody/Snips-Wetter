@@ -65,6 +65,8 @@ class Weather:
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
         locations = []
         for (slot_value, slot) in intentMessage.slots.items():
+            print("slot_value: ", slot_value)
+            print("slot: ", slot)
             locations.append(slot[0].slot_value.value)
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
