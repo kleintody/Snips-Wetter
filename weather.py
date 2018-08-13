@@ -84,7 +84,7 @@ class Weather:
     @staticmethod
     def add_warning_if_needed(response, weather_forecast):
         if weather_forecast["rain"] and "rain" not in weather_forecast["mainCondition"]\
-                and "regen" not in weather_forecast:
+                and "regen" not in weather_forecast["mainCondition"]:
             response += ' Es könnte regnen.'
         if weather_forecast["snow"] and "snow" not in weather_forecast["mainCondition"]:
             response += ' Es könnte schneien.'
