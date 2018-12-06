@@ -74,7 +74,7 @@ class Weather:
         else:
             location = self.default_city_name.encode('utf8')
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
-            self.weather_api_base_url, location.encode('utf8'), self.weather_api_key, self.units)
+            self.weather_api_base_url, location, self.weather_api_key, self.units)
         #try:
         r_forecast = requests.get(forecast_url)
         return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
