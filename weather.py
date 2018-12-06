@@ -70,9 +70,9 @@ class Weather:
                 locations.append(slot[0].slot_value.value)
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
-            location = location_objects[0].value
+            location = location_objects[0].value.encode('utf8')
         else:
-            location = self.default_city_name
+            location = self.default_city_name.encode('utf8')
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location.encode('utf8'), self.weather_api_key, self.units)
         #try:
