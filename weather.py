@@ -75,11 +75,11 @@ class Weather:
             location = self.default_city_name
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location.encode('utf8'), self.weather_api_key, self.units)
-        try:
-            r_forecast = requests.get(forecast_url)
-            return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
-        except (requests.exceptions.ConnectionError, ValueError):
-            return 1  # Error: No internet connection
+        #try:
+        r_forecast = requests.get(forecast_url)
+        return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
+        #except (requests.exceptions.ConnectionError, ValueError):
+        #    return 1  # Error: No internet connection
 
     @staticmethod
     def add_warning_if_needed(response, weather_forecast):
