@@ -98,10 +98,11 @@ class Weather:
                     - max and min temperature
                     - warning about rain or snow if needed
         """
-        weather_forecast, location = self.get_weather_forecast(intentMessage)
-        if weather_forecast == 1 or weather_forecast == 2:
-            response = self.error_response(weather_forecast, location)
+        data = self.get_weather_forecast(intentMessage)
+        if data == 1 or data == 2:
+            response = self.error_response(data, None)
         else:
+            weather_forecast, location = data
             response = ("Wetter heute{1}: {0}. "
                         "Aktuelle Temperatur ist {2} Grad. "
                         "Höchsttemperatur: {3} Grad. "
