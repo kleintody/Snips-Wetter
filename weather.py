@@ -13,7 +13,7 @@ class Weather:
         except KeyError:
             self.weather_api_key = "XXXXXXXXXXXXXXXXXXXXX"
         try:
-            self.default_city_name = config['secret']['default_city']
+            self.default_city_name = config['secret']['default_city'].encode('utf8')
         except KeyError:
             self.default_city_name = "Berlin"
         try:
@@ -72,7 +72,7 @@ class Weather:
         if location_objects:
             location = location_objects[0].value
         else:
-            location = self.default_city_name.encode("utf8")
+            location = self.default_city_name
         print(location_objects)
         print(location)
         print(self.default_city_name.encode("utf8"))
