@@ -30,7 +30,7 @@ class Weather:
 
             all_min = [x["main"]["temp_min"] for x in today_forecasts]
             all_max = [x["main"]["temp_max"] for x in today_forecasts]
-            all_conditions = [x["weather"][0]["description"].decode('utf8') for x in today_forecasts]
+            all_conditions = [x["weather"][0]["description"].encode('utf8') for x in today_forecasts]
             rain = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Rain", today_forecasts))
             snow = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Snow", today_forecasts))
 
@@ -42,7 +42,7 @@ class Weather:
                 "temperatureMax": int(max(all_max)),
                 "rain": len(rain) > 0,
                 "snow": len(snow) > 0,
-                "mainCondition": max(set(all_conditions), key=all_conditions.count).lower()
+                "mainCondition": max(set(all_conditions), key=all_conditions.count).lower().decode('utf8')
             }
         except KeyError:  # error 404 (locality not found or api key is wrong)
             return 2
@@ -77,7 +77,6 @@ class Weather:
             self.weather_api_base_url, location, self.weather_api_key, self.units)
         #try:
         r_forecast = requests.get(forecast_url)
-        print(r_forecast.encoding)
         return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
         #except (requests.exceptions.ConnectionError, ValueError):
         #    return 1  # Error: No internet connection
