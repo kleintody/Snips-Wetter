@@ -144,7 +144,7 @@ class Weather:
             - current temperature
             - max and min temperature
         """
-        weather_forecast, location = self.get_weather_forecast(intentMessage)
+        weather_forecast = self.get_weather_forecast(intentMessage)
         if weather_forecast['rc'] != 0:
             response = self.error_response(weather_forecast)
         else:
