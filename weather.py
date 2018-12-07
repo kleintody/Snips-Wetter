@@ -35,14 +35,14 @@ class Weather:
             snow = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Snow", today_forecasts))
 
             return {
-                "location": location.decode('utf8'),
-                "inLocation": " in {0}".format(location.decode('utf8')) if location else "",
+                "location": location,
+                "inLocation": " in {0}".format(location) if location else "",
                 "temperature": int(today_forecasts[0]["main"]["temp"]),
                 "temperatureMin": int(min(all_min)),
                 "temperatureMax": int(max(all_max)),
                 "rain": len(rain) > 0,
                 "snow": len(snow) > 0,
-                "mainCondition": max(set(all_conditions), key=all_conditions.count).lower().decode('utf8')
+                "mainCondition": max(set(all_conditions), key=all_conditions.count).lower()
             }
         except KeyError:  # error 404 (locality not found or api key is wrong)
             return 2
@@ -115,7 +115,7 @@ class Weather:
                 weather_forecast["temperatureMin"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
-        response = response
+        response = response.decode('utf8')
         print(response.encode('utf8'))
         return response
 
