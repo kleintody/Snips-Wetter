@@ -70,9 +70,9 @@ class Weather:
                 locations.append(slot[0].slot_value.value)
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
-            location = location_objects[0].value.encode('utf8')
+            location = location_objects[0].value.decode('utf8')
         else:
-            location = self.default_city_name.encode('utf8')
+            location = self.default_city_name.encode()
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location, self.weather_api_key, self.units)
         #try:
@@ -99,6 +99,7 @@ class Weather:
                     - warning about rain or snow if needed
         """
         data = self.get_weather_forecast(intentMessage)
+        print("DATA: ", data)
         if data == 1 or data == 2:
             response = self.error_response(data, None)
         else:
