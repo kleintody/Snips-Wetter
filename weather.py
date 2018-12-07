@@ -116,6 +116,7 @@ class Weather:
                 weather_forecast["temperatureMin"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
+        response = response.encode('utf8')
         print(response)
         return response
 
