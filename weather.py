@@ -36,7 +36,7 @@ class Weather:
 
             return {
                 "location": location,
-                "inLocation": " in {0}".format(location.encode('utf8')) if location else "",
+                "inLocation": " in {0}".format(location) if location else "",
                 "temperature": int(today_forecasts[0]["main"]["temp"]),
                 "temperatureMin": int(min(all_min)),
                 "temperatureMax": int(max(all_max)),
