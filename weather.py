@@ -70,17 +70,14 @@ class Weather:
                 locations.append(slot[0].slot_value.value)
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
-            location = location_objects[0].value
+            location = location_objects[0].value.encode('utf8')
         else:
             location = self.default_city_name
-        print(location_objects)
-        print(location)
-        print(self.default_city_name.encode("utf8"))
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location, self.weather_api_key, self.units)
-        print(forecast_url)
         #try:
         r_forecast = requests.get(forecast_url)
+        print(r_forecast)
         return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
         #except (requests.exceptions.ConnectionError, ValueError):
         #    return 1  # Error: No internet connection
@@ -102,7 +99,6 @@ class Weather:
                     - max and min temperature
                     - warning about rain or snow if needed
         """
-        print("hello")
         data = self.get_weather_forecast(intentMessage)
         print("DATA: ", data)
         if data == 1 or data == 2:
