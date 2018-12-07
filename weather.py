@@ -117,7 +117,7 @@ class Weather:
             )
             response = self.add_warning_if_needed(response, weather_forecast)
         response = response.decode('utf8')
-        print(response)
+        print(response.encode('utf8'))
         return response
 
     def forecast_condition(self, intentMessage):
