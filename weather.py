@@ -98,6 +98,7 @@ class Weather:
                     - max and min temperature
                     - warning about rain or snow if needed
         """
+        print("hello")
         data = self.get_weather_forecast(intentMessage)
         print("DATA: ", data)
         if data == 1 or data == 2:
