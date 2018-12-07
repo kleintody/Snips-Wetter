@@ -35,6 +35,7 @@ class Weather:
             snow = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Snow", today_forecasts))
 
             return {
+                "rc": 0,
                 "location": location,
                 "inLocation": " in {0}".format(location) if location else "",
                 "temperature": int(today_forecasts[0]["main"]["temp"]),
@@ -45,18 +46,21 @@ class Weather:
                 "mainCondition": max(set(all_conditions), key=all_conditions.count).lower()
             }
         except KeyError:  # error 404 (locality not found or api key is wrong)
-            return 2
+            return {'rc': 2}
     
-    def error_response(self, error_num, location):
+    def error_response(self, data):
+        error_num = data['rc']
         if error_num == 1:
             response = random.choice(["Es ist leider kein Internet verfügbar.",
                                       "Ich bin nicht mit dem Internet verbunden.",
                                       "Es ist kein Internet vorhanden."])
-            if location == self.default_city_name:
+            if 'location' in data.keys() and data['location'] == self.default_city_name:
                 response = "Schau doch aus dem Fenster. " + response
         elif error_num == 2:
-            response = random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig.",
-                                  "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel ist ungültig."])
+            response = random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der "
+                                      "API-Schlüssel ist ungültig.",
+                                      "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel "
+                                      "ist ungültig."])
         else:
             response = random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
         return response
@@ -75,11 +79,11 @@ class Weather:
             location = self.default_city_name
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location, self.weather_api_key, self.units)
-        #try:
-        r_forecast = requests.get(forecast_url)
-        return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
-        #except (requests.exceptions.ConnectionError, ValueError):
-        #    return 1  # Error: No internet connection
+        try:
+            r_forecast = requests.get(forecast_url)
+            return self.parse_open_weather_map_forecast_response(r_forecast.json(), location)
+        except (requests.exceptions.ConnectionError, ValueError):
+            return {'rc': 1}  # Error: No internet connection
 
     @staticmethod
     def add_warning_if_needed(response, weather_forecast):
@@ -98,12 +102,10 @@ class Weather:
                     - max and min temperature
                     - warning about rain or snow if needed
         """
-        data = self.get_weather_forecast(intentMessage)
-        print("DATA: ", data)
-        if data == 1 or data == 2:
-            response = self.error_response(data, None)
+        weather_forecast = self.get_weather_forecast(intentMessage)
+        if weather_forecast['rc'] != 0:
+            response = self.error_response(weather_forecast)
         else:
-            weather_forecast, location = data
             response = ("Wetter heute{1}: {0}. "
                         "Aktuelle Temperatur ist {2} Grad. "
                         "Höchsttemperatur: {3} Grad. "
@@ -116,7 +118,6 @@ class Weather:
             )
             response = self.add_warning_if_needed(response, weather_forecast)
         response = response.decode('utf8')
-        print(response.encode('utf8'))
         return response
 
     def forecast_condition(self, intentMessage):
@@ -125,15 +126,16 @@ class Weather:
             - condition
             - warning about rain or snow if needed
         """
-        weather_forecast, location = self.get_weather_forecast(intentMessage)
-        if weather_forecast == 1 or weather_forecast == 2:
-            response = self.error_response(weather_forecast, location)
+        weather_forecast = self.get_weather_forecast(intentMessage)
+        if weather_forecast['rc'] != 0:
+            response = self.error_response(weather_forecast)
         else:
             response = "Wetter heute{1}: {0}.".format(
                 weather_forecast["mainCondition"],
                 weather_forecast["inLocation"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
+        response = response.decode('utf8')
         return response
 
     def forecast_temperature(self, intentMessage):
@@ -143,8 +145,8 @@ class Weather:
             - max and min temperature
         """
         weather_forecast, location = self.get_weather_forecast(intentMessage)
-        if weather_forecast == 1 or weather_forecast == 2:
-            response = self.error_response(weather_forecast, location)
+        if weather_forecast['rc'] != 0:
+            response = self.error_response(weather_forecast)
         else:
             response = ("{0} hat es aktuell {1} Grad. "
                         "Heute wird die Höchsttemperatur {2} Grad sein "
@@ -152,6 +154,6 @@ class Weather:
                 weather_forecast["inLocation"],
                 weather_forecast["temperature"],
                 weather_forecast["temperatureMax"],
-                weather_forecast["temperatureMin"]
-            )
+                weather_forecast["temperatureMin"])
+        response = response.decode('utf8')
         return response
