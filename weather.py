@@ -70,11 +70,12 @@ class Weather:
                 locations.append(slot[0].slot_value.value)
         location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
         if location_objects:
-            location = location_objects[0].value.decode('utf8')
+            location = location_objects[0].value
         else:
-            location = self.default_city_name.encode()
+            location = self.default_city_name
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location, self.weather_api_key, self.units)
+        print(forecast_url)
         #try:
         r_forecast = requests.get(forecast_url)
         return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
