@@ -30,13 +30,13 @@ class Weather:
 
             all_min = [x["main"]["temp_min"] for x in today_forecasts]
             all_max = [x["main"]["temp_max"] for x in today_forecasts]
-            all_conditions = [x["weather"][0]["description"].encode('utf8') for x in today_forecasts]
+            all_conditions = [x["weather"][0]["description"].decode('utf8') for x in today_forecasts]
             rain = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Rain", today_forecasts))
             snow = list(filter(lambda forecast: forecast["weather"][0]["main"] == "Snow", today_forecasts))
 
             return {
-                "location": location,
-                "inLocation": " in {0}".format(location) if location else "",
+                "location": location.decode('utf8'),
+                "inLocation": " in {0}".format(location.decode('utf8')) if location else "",
                 "temperature": int(today_forecasts[0]["main"]["temp"]),
                 "temperatureMin": int(min(all_min)),
                 "temperatureMax": int(max(all_max)),
@@ -116,7 +116,7 @@ class Weather:
                 weather_forecast["temperatureMin"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
-        response = response.decode('utf8')
+        response = response
         print(response.encode('utf8'))
         return response
 
