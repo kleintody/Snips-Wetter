@@ -77,7 +77,7 @@ class Weather:
             self.weather_api_base_url, location, self.weather_api_key, self.units)
         #try:
         r_forecast = requests.get(forecast_url)
-        print(r_forecast.encoding('utf8'))
+        print(r_forecast.encoding())
         return self.parse_open_weather_map_forecast_response(r_forecast.json(), location), location
         #except (requests.exceptions.ConnectionError, ValueError):
         #    return 1  # Error: No internet connection
