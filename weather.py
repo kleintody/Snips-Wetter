@@ -16,10 +16,6 @@ class Weather:
             self.default_city_name = config['secret']['default_city'].encode('utf8')
         except KeyError:
             self.default_city_name = "Berlin"
-        try:
-            self.units = config['global']['units']
-        except KeyError:
-            self.units = "metric"
 
     def parse_open_weather_map_forecast_response(self, response, location):
         # Parse the output of Open Weather Map's forecast endpoint
@@ -65,10 +61,10 @@ class Weather:
             response = random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
         return response
 
-    def get_weather_forecast(self, intentMessage):
+    def get_weather_forecast(self, intent_message):
         # Parse the query slots, and fetch the weather forecast from Open Weather Map's API
         locations = []
-        for (slot_value, slot) in intentMessage.slots.items():
+        for (slot_value, slot) in intent_message.slots.items():
             if slot_value not in ['forecast_condition_name', 'forecast_start_date_time',
                                   'forecast_item', 'forecast_temperature_name']:
                 locations.append(slot[0].slot_value.value)
@@ -78,7 +74,7 @@ class Weather:
         else:
             location = self.default_city_name
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
-            self.weather_api_base_url, location, self.weather_api_key, self.units)
+            self.weather_api_base_url, location, self.weather_api_key, "metric")
         try:
             r_forecast = requests.get(forecast_url)
             return self.parse_open_weather_map_forecast_response(r_forecast.json(), location)
@@ -94,7 +90,7 @@ class Weather:
             response += ' Es könnte schneien.'
         return response
 
-    def forecast(self, intentMessage):
+    def forecast(self, intent_message):
         """
                 Complete answer:
                     - condition
@@ -102,7 +98,7 @@ class Weather:
                     - max and min temperature
                     - warning about rain or snow if needed
         """
-        weather_forecast = self.get_weather_forecast(intentMessage)
+        weather_forecast = self.get_weather_forecast(intent_message)
         if weather_forecast['rc'] != 0:
             response = self.error_response(weather_forecast)
         else:
@@ -120,13 +116,13 @@ class Weather:
         response = response.decode('utf8')
         return response
 
-    def forecast_condition(self, intentMessage):
+    def forecast_condition(self, intent_message):
         """
         Condition-focused answer:
             - condition
             - warning about rain or snow if needed
         """
-        weather_forecast = self.get_weather_forecast(intentMessage)
+        weather_forecast = self.get_weather_forecast(intent_message)
         if weather_forecast['rc'] != 0:
             response = self.error_response(weather_forecast)
         else:
@@ -138,13 +134,13 @@ class Weather:
         response = response.decode('utf8')
         return response
 
-    def forecast_temperature(self, intentMessage):
+    def forecast_temperature(self, intent_message):
         """
         Temperature-focused answer:
             - current temperature
             - max and min temperature
         """
-        weather_forecast = self.get_weather_forecast(intentMessage)
+        weather_forecast = self.get_weather_forecast(intent_message)
         if weather_forecast['rc'] != 0:
             response = self.error_response(weather_forecast)
         else:

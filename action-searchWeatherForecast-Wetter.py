@@ -1,37 +1,60 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import ConfigParser
-from hermes_python.hermes import Hermes
-from hermes_python.ontology import *
+import configparser
+from hermes_python.hermes import Hermes, MqttOptions
 import io
-import random  # for random answer forms
 from weather import Weather
+import toml
 
-CONFIGURATION_ENCODING_FORMAT = "utf-8"
-CONFIG_INI = "config.ini"
-
-class SnipsConfigParser(ConfigParser.SafeConfigParser):
-    def to_dict(self):
-        return {section : {option_name : option for option_name, option in self.items(section)} for section in self.sections()}
+USERNAME_INTENTS = "domi"
+MQTT_BROKER_ADDRESS = "localhost:1883"
+MQTT_USERNAME = None
+MQTT_PASSWORD = None
 
 
-def read_configuration_file(configuration_file):
+def add_prefix(intent_name):
+    return USERNAME_INTENTS + ":" + intent_name
+
+
+def read_configuration_file():
     try:
-        with io.open(configuration_file, encoding=CONFIGURATION_ENCODING_FORMAT) as f:
-            conf_parser = SnipsConfigParser()
-            conf_parser.readfp(f)
-            return conf_parser.to_dict()
-    except (IOError, ConfigParser.Error) as e:
+        cp = configparser.ConfigParser()
+        with io.open("config.ini", encoding="utf-8") as f:
+            cp.read_file(f)
+        return {section: {option_name: option for option_name, option in cp.items(section)}
+                for section in cp.sections()}
+    except (IOError, configparser.Error):
         return dict()
 
-def subscribe_intent_callback(hermes, intentMessage):
-    conf = read_configuration_file(CONFIG_INI)
-    hermes.publish_end_session(intentMessage.session_id, weather.forecast(intentMessage))
+
+def intent_callback_weather(hermes, intent_message):
+    hermes.publish_end_session(intent_message.session_id, weather.forecast(intent_message))
+
+
+def intent_callback_weather_condition(hermes, intent_message):
+    hermes.publish_end_session(intent_message.session_id, weather.forecast_condition(intent_message))
+
+
+def intent_callback_weather_temperature(hermes, intent_message):
+    hermes.publish_end_session(intent_message.session_id, weather.forecast_temperature(intent_message))
 
 
 if __name__ == "__main__":
-    conf = read_configuration_file(CONFIG_INI)
-    weather = Weather(conf)
-    with Hermes("localhost:1883") as h:
-        h.subscribe_intent("domi:searchWeatherForecast", subscribe_intent_callback).start()
+    config = read_configuration_file()
+    weather = Weather(config)
+
+    snips_config = toml.load('/etc/snips.toml')
+    if 'mqtt' in snips_config['snips-common'].keys():
+        MQTT_BROKER_ADDRESS = snips_config['snips-common']['mqtt']
+    if 'mqtt_username' in snips_config['snips-common'].keys():
+        MQTT_USERNAME = snips_config['snips-common']['mqtt_username']
+    if 'mqtt_password' in snips_config['snips-common'].keys():
+        MQTT_PASSWORD = snips_config['snips-common']['mqtt_password']
+    mqtt_opts = MqttOptions(username=MQTT_USERNAME, password=MQTT_PASSWORD, broker_address=MQTT_BROKER_ADDRESS)
+
+    with Hermes(mqtt_options=mqtt_opts) as h:
+        h.subscribe_intent(add_prefix("searchWeatherForecast"), intent_callback_weather)
+        h.subscribe_intent(add_prefix("searchWeatherForecastCondition"), intent_callback_weather_condition)
+        h.subscribe_intent(add_prefix("searchWeatherForecastTemperature"), intent_callback_weather_temperature)
+        h.start()
