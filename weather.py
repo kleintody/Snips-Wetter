@@ -16,6 +16,8 @@ class Weather:
             self.default_city_name = config['secret']['default_city'].encode('utf8')
         except KeyError:
             self.default_city_name = "Berlin"
+        print(config)
+        print(self.default_city_name)
 
     def parse_open_weather_map_forecast_response(self, response, location):
         # Parse the output of Open Weather Map's forecast endpoint
