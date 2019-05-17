@@ -113,7 +113,6 @@ class Weather:
                 weather_forecast["temperatureMin"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
-        response = response.decode('utf8')
         return response
 
     def forecast_condition(self, intent_message):
@@ -131,7 +130,6 @@ class Weather:
                 weather_forecast["inLocation"]
             )
             response = self.add_warning_if_needed(response, weather_forecast)
-        response = response.decode('utf8')
         return response
 
     def forecast_temperature(self, intent_message):
@@ -151,5 +149,4 @@ class Weather:
                 weather_forecast["temperature"],
                 weather_forecast["temperatureMax"],
                 weather_forecast["temperatureMin"])
-        response = response.decode('utf8')
         return response
