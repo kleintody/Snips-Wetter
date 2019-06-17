@@ -35,7 +35,7 @@ Copy this one.
     ```
 
 ## Usage
-At the moment you can ask for the current weather, the temperature and the weather condition.
+At the moment you can ask for the current weather, the temperature and the weather condition as well as the weather for a few days in advance.
 
 ### Example sentences
 - *Kannst du mir sagen wie das Wetter ist?*
@@ -45,3 +45,4 @@ At the moment you can ask for the current weather, the temperature and the weath
 
 ## Todo
 - Add another forecast provider
+- Get it to give the weather for morning, midday or evening for specific days
