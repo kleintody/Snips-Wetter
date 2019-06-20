@@ -32,91 +32,149 @@ class Weather:
         except locale.Error:
             print("That locale doesn't exist on the system")
 
-    def get_open_weather_map_forecast(self, location):
-        print("get_open_weather_map_forecast: start")
+    # function that is called from searchWeatherForecast
+    def forecast(self, intent_message):
+        """
+                Complete answer:
+                    - condition
+                    - max and min temperature
+                    - warning about rain or snow if needed
+        """
+        weather_forecast = self.get_weather_forecast(intent_message)
+        if weather_forecast.get("rc", 0) != 0:
+            response = self.error_response(weather_forecast)
+        else:
+            day_string=self.day(weather_forecast)
+            request = weather_forecast["request"]
+            if request["type"] == RequestType.FIXED and request["grain"] == Grain.DAY:
+                response = ("Wetter {4} {1}: {0}. "
+                            "Die Temperatur ist zwischen {3} und {2} Grad.").format(
+                    weather_forecast["mainCondition"],
+                    weather_forecast["inLocation"],
+                    weather_forecast["temperatureMax"],
+                    weather_forecast["temperatureMin"],
+                    day_string)
+                response = self.add_warning_if_needed(response, weather_forecast)
+            elif request["type"] == RequestType.FIXED and request["grain"] == Grain.HOUR:
+                response = ("Das Wetter {3} um {4} {1}: {0}. "
+                            "Die Temperatur ist {2} Grad.").format(
+                    weather_forecast["mainCondition"],
+                    weather_forecast["inLocation"],
+                    weather_forecast["temperature"],
+                    day_string,
+                    weather_forecast["requested_time"])
+        return response
+
+    # function that is called from searchWeatherForecastCondition
+    def forecast_condition(self, intentMessage):
+        """
+        Condition-focused answer:
+            - condition
+            - warning about rain or snow if needed
+        """
+        weather_forecast = self.get_weather_forecast(intentMessage)
+        if weather_forecast.get("rc", 0) != 0:
+            response = self.error_response(weather_forecast)
+        else:
+            day_string=self.day(weather_forecast)
+            response = "Wetter {2} {1}: {0}.".format(
+                weather_forecast["mainCondition"],
+                weather_forecast["inLocation"],
+                day_string)
+            response = self.add_warning_if_needed(response, weather_forecast)
+        return response
+
+    # function that is called from searchWeatherForecastTemperature
+    def forecast_temperature(self, intentMessage):
+        """
+        Temperature-focused answer:
+            - current temperature (for today only)
+            - max and min temperature
+        """
+        weather_forecast = self.get_weather_forecast(intentMessage)
+        if weather_forecast['rc'] != 0:
+            response = self.error_response(weather_forecast)
+        else:
+            day_string=self.day(weather_forecast)
+            if weather_forecast["time_difference"]==0:
+                response = ("{0} hat es aktuell {1} Grad. "
+                            "Heute wird die Höchsttemperatur {2} Grad sein "
+                            "und die Tiefsttemperatur {3} Grad.").format(
+                    weather_forecast["inLocation"] if weather_forecast["inLocation"] != "" else "Hier",
+                    weather_forecast["temperature"],
+                    weather_forecast["temperatureMax"],
+                    weather_forecast["temperatureMin"])
+            else:
+                response = ("{4} wird die Höchsttemperatur {2} Grad sein "
+                        "und die Tiefsttemperatur {3} Grad.").format(
+                weather_forecast["inLocation"],
+                weather_forecast["temperature"],
+                weather_forecast["temperatureMax"],
+                weather_forecast["temperatureMin"],
+                day_string)
+        return response
+
+    # function getting and parsing output from open weather map
+    def get_open_weather_map_forecast(self, request):
+        location = request["location"]
         if location == "":
             location = self.default_city_name
         forecast_url = "{0}/forecast?q={1}&APPID={2}&units={3}&lang=de".format(
             self.weather_api_base_url, location, self.weather_api_key, self.units)
         try:
-            r_forecast = requests.get(forecast_url)
+            response = requests.get(forecast_url)
+            response = response.json()
             
-            if r_forecast.json()["cod"] == "401" or r_forecast.json()["cod"] == "404" or r_forecast.json()["cod"] == "429":
-                print("get_open_weather_map_forecast: error rc:2")
+            if response["cod"] == "401" or response["cod"] == "404" or response["cod"] == "429":
                 return {'rc': 2} # Error: something went wrong with the api call
-            print("get_open_weather_map_forecast: return")
-            return r_forecast
+            
+            # Parse the output of Open Weather Map's forecast endpoint
+            forecasts = {}
+            for x in response["list"]:
+                if str(date.fromtimestamp(x["dt"])) not in forecasts:
+                    forecasts[str(date.fromtimestamp(x["dt"]))] = list(filter(lambda forecast: date.fromtimestamp(forecast["dt"]) == date.fromtimestamp(x["dt"]), response["list"]))
+                    
+            weather = {}
+            for key,forecast in forecasts.items():
+                weather[key] = {
+                                    "rc": 0,
+                                    "type": "weather",
+                                    "date": datetime.strptime(key, "%Y-%m-%d").date(),
+                                    "location": location,
+                                    "time": [datetime.strptime(x, "%H:%M:%S").time() for x in [x["dt_txt"].split(" ")[1] for x in forecast]],
+                                    "temperature": [x["main"]["temp"] for x in forecast],
+                                    "weather condition": [x["weather"][0]["main"] for x in forecast],
+                                    "weather description": [x["weather"][0]["description"] for x in forecast],
+                                    "pressure": [x["main"]["pressure"] for x in forecast],
+                                    "humidity": [x["main"]["humidity"] for x in forecast],
+                                    "wind speed": [x["wind"]["speed"] for x in forecast],
+                                    "wind direction": [x["wind"]["deg"] for x in forecast]
+                                   }
+            return weather
         except (requests.exceptions.ConnectionError, ValueError):
-            print("get_open_weather_map_forecast: error rc:1")
             return {'rc': 1}  # Error: No internet connection
-
-    def parse_open_weather_map_forecast(self, response, date_requested_str, location):
-        # Parse the output of Open Weather Map's forecast endpoint
-        date_requested = datetime.strptime(date_requested_str, "%Y-%m-%d").date()
-
-        forecasts = list(filter(lambda forecast: str(date.fromtimestamp(forecast["dt"])) == date_requested_str, response.json()["list"]))
-        if forecasts != []:
-            weather_for_date = {
-                                "rc": 0,
-                                "type": "weather",
-                                "date": date_requested,
-                                "location": location,
-                                "time": [datetime.strptime(x, "%H:%M:%S").time() for x in [x["dt_txt"].split(" ")[1] for x in forecasts]],
-                                "temperature": [x["main"]["temp"] for x in forecasts],
-                                "weather condition": [x["weather"][0]["main"] for x in forecasts],
-                                "weather description": [x["weather"][0]["description"] for x in forecasts],
-                                "pressure": [x["main"]["pressure"] for x in forecasts],
-                                "humidity": [x["main"]["humidity"] for x in forecasts],
-                                "wind speed": [x["wind"]["speed"] for x in forecasts],
-                                "wind direction": [x["wind"]["deg"] for x in forecasts]
-                               }
-            return weather_for_date
-        else:
-            return {'rc': 3 } # to many days in advance
-
-    def error_response(self, data):
-        error_num = data['rc']
-        if error_num == 1:
-            response = random.choice(["Es ist leider kein Internet verfügbar.",
-                                      "Ich bin nicht mit dem Internet verbunden.",
-                                      "Es ist kein Internet vorhanden."])
-            if 'location' in data.keys() and data['location'] == self.default_city_name:
-                response = "Schau doch aus dem Fenster. " + response
-        elif error_num == 2:
-            response = random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der "
-                                      "API-Schlüssel ist ungültig.",
-                                      "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel "
-                                      "ist ungültig."])
-        elif error_num == 3:
-            response = random.choice(["So weit in die Zukunft kenne ich das Wetter nicht.",
-                                      "Ich kann nicht soweit in die Zukunft sehen.",
-                                      "Das Wetter für diesen Tag wurde noch nicht beschlossen."])
-        elif error_num == 4:
-            response = random.choice(["Diese Funktion wird noch nicht unterstützt.", 
-                                      "Ich habe noch nicht gelernt, wie ich diese Anfrage verarbeiten soll."])
-        else:
-            response = random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
-        return response
 
     def get_weather_forecast(self, intent_message):
         request = self.parse_intent_request(intent_message)
-        weatherforecast = self.get_open_weather_map_forecast(request["location"])
-        if type(weatherforecast) is dict and weatherforecast.get("rc", 0) != 0:
+        weatherforecast = self.get_open_weather_map_forecast(request)
+        if weatherforecast.get("rc", 0) != 0:
             return weatherforecast
-        
-        if request["type"] == RequestType.FIXED:
-            weather_for_date = self.parse_open_weather_map_forecast(weatherforecast, request["startdate"], request["location"])
-            if request["grain"] == Grain.DAY:
-                return self.get_weather_fixed_day(request, weather_for_date)
-            elif request["grain"] == Grain.HOUR:
-                return self.get_weather_fixed_hour(request, weather_for_date)
-        elif request["type"] == RequestType.INTERVAL: 
-            if request["grain"] == Grain.DAY:
-                return {'rc': 4}
-            elif request["grain"] == Grain.HOUR:
-                return {'rc': 4}
         else:
-            return {'rc': -1}
+            try:
+                if request["type"] == RequestType.FIXED:
+                    if request["grain"] == Grain.DAY:
+                        return self.get_weather_fixed_day(request, weatherforecast[request["startdate"]])
+                    elif request["grain"] == Grain.HOUR:
+                        return self.get_weather_fixed_hour(request, weatherforecast[request["startdate"]])
+                elif request["type"] == RequestType.INTERVAL: 
+                    if request["grain"] == Grain.DAY:
+                        return {'rc': 4}
+                    elif request["grain"] == Grain.HOUR:
+                        return {'rc': 4}
+                else:
+                    return {'rc': -1}
+            except KeyError:
+                return {'rc': 3} # to many days in advance
 
     def get_weather_fixed_hour(self, request, weather):
         if weather['rc'] != 0:
@@ -149,10 +207,15 @@ class Weather:
         else:
             today = date.today()
             time_difference=(weather["date"]-today).days
+            index = -1
+            for x in range(len(weather["time"])-1):
+                if weather["time"][x] <= datetime.now().time() < weather["time"][x+1]:
+                    index=x
             return {
                     "rc": 0,
                     "request": request,
                     "inLocation": " in {0}".format(request["location"]) if request["location"] else "",
+                    "temperature": int(weather["temperature"][index]),
                     "temperatureMin": int(min(weather["temperature"])),
                     "temperatureMax": int(max(weather["temperature"])),
                     "rain": "Rain" in weather["weather condition"],
@@ -161,7 +224,7 @@ class Weather:
                     "time_difference":time_difference,
                     "weekday":weather["date"].strftime("%A"),
                     "requested_date":weather["date"].strftime("%d. %B")
-                }
+                   }
 
     def parse_intent_request(self, intent_message):
         # Parse the query slots
@@ -195,6 +258,30 @@ class Weather:
             request["location"] = location_objects[0].value
         return request
 
+    def error_response(self, data):
+        error_num = data['rc']
+        if error_num == 1:
+            response = random.choice(["Es ist leider kein Internet verfügbar.",
+                                      "Ich bin nicht mit dem Internet verbunden.",
+                                      "Es ist kein Internet vorhanden."])
+            if 'location' in data.keys() and data['location'] == self.default_city_name:
+                response = "Schau doch aus dem Fenster. " + response
+        elif error_num == 2:
+            response = random.choice(["Wetter konnte nicht abgerufen werden. Entweder gibt es den Ort nicht, oder der "
+                                      "API-Schlüssel ist ungültig.",
+                                      "Fehler beim Abrufen. Entweder gibt es den Ort nicht, oder der API-Schlüssel "
+                                      "ist ungültig."])
+        elif error_num == 3:
+            response = random.choice(["So weit in die Zukunft kenne ich das Wetter nicht.",
+                                      "Ich kann nicht soweit in die Zukunft sehen.",
+                                      "Das Wetter für diesen Tag wurde noch nicht beschlossen."])
+        elif error_num == 4:
+            response = random.choice(["Diese Funktion wird noch nicht unterstützt.", 
+                                      "Ich habe noch nicht gelernt, wie ich diese Anfrage verarbeiten soll."])
+        else:
+            response = random.choice(["Es ist ein Fehler aufgetreten.", "Hier ist ein Fehler aufgetreten."])
+        return response
+        
     @staticmethod
     def add_warning_if_needed(response, weather_forecast):
         if weather_forecast["rain"] and "rain" not in weather_forecast["mainCondition"]\
@@ -202,85 +289,6 @@ class Weather:
             response += ' Es könnte regnen.'
         if weather_forecast["snow"] and "snow" not in weather_forecast["mainCondition"]:
             response += ' Es könnte schneien.'
-        return response
-
-    def forecast(self, intent_message):
-        """
-                Complete answer:
-                    - condition
-                    - max and min temperature
-                    - warning about rain or snow if needed
-        """
-        weather_forecast = self.get_weather_forecast(intent_message)
-        if weather_forecast.get("rc", 0) != 0:
-            response = self.error_response(weather_forecast)
-        else:
-            day_string=self.day(weather_forecast)
-            request = weather_forecast["request"]
-            if request["type"] == RequestType.FIXED and request["grain"] == Grain.DAY:
-                response = ("Wetter {4} {1}: {0}. "
-                            "Die Temperatur ist zwischen {3} und {2} Grad.").format(
-                    weather_forecast["mainCondition"],
-                    weather_forecast["inLocation"],
-                    weather_forecast["temperatureMax"],
-                    weather_forecast["temperatureMin"],
-                    day_string)
-                response = self.add_warning_if_needed(response, weather_forecast)
-            elif request["type"] == RequestType.FIXED and request["grain"] == Grain.HOUR:
-                response = ("Das Wetter {3} um {4} {1}: {0}. "
-                            "Die Temperatur ist {2} Grad.").format(
-                    weather_forecast["mainCondition"],
-                    weather_forecast["inLocation"],
-                    weather_forecast["temperature"],
-                    day_string,
-                    weather_forecast["requested_time"])
-        return response
-
-    def forecast_condition(self, intentMessage):
-        """
-        Condition-focused answer:
-            - condition
-            - warning about rain or snow if needed
-        """
-        weather_forecast = self.get_weather_forecast(intentMessage)
-        if weather_forecast.get("rc", 0) != 0:
-            response = self.error_response(weather_forecast)
-        else:
-            day_string=self.day(weather_forecast)
-            response = "Wetter {2} {1}: {0}.".format(
-                weather_forecast["mainCondition"],
-                weather_forecast["inLocation"],
-                day_string)
-            response = self.add_warning_if_needed(response, weather_forecast)
-        return response
-
-    def forecast_temperature(self, intentMessage):
-        """
-        Temperature-focused answer:
-            - current temperature (for today only)
-            - max and min temperature
-        """
-        weather_forecast = self.get_weather_forecast(intentMessage)
-        if weather_forecast['rc'] != 0:
-            response = self.error_response(weather_forecast)
-        else:
-            day_string=self.day(weather_forecast)
-            if weather_forecast["time_difference"]==0:
-                response = ("{0} hat es aktuell {1} Grad. "
-                            "Heute wird die Höchsttemperatur {2} Grad sein "
-                            "und die Tiefsttemperatur {3} Grad.").format(
-                    weather_forecast["inLocation"],
-                    weather_forecast["temperature"],
-                    weather_forecast["temperatureMax"],
-                    weather_forecast["temperatureMin"])
-            else:
-                response = ("{4} wird die Höchsttemperatur {2} Grad sein "
-                        "und die Tiefsttemperatur {3} Grad.").format(
-                weather_forecast["inLocation"],
-                weather_forecast["temperature"],
-                weather_forecast["temperatureMax"],
-                weather_forecast["temperatureMin"],
-                day_string)
         return response
 
     @staticmethod
@@ -294,7 +302,6 @@ class Weather:
             day_string="morgen"
         else:
             temp_day=datetime.today().weekday()+weather_forecast["time_difference"]
-            print(temp_day,"=",datetime.today().weekday(),"+",weather_forecast["time_difference"])
             if temp_day < 7:
                 day_string="am " + weather_forecast["weekday"]
             elif temp_day < 14:
