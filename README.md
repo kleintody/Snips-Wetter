@@ -47,5 +47,5 @@ At the moment you can ask for the current weather, the temperature and the weath
 - Get it to give the weather for morning, midday or evening for specific days
 - Output the temperature and or weather at a specific hour (forecast already done)
 - More complete weather report for the day (split up in morning, midday, evening instead of one condensed forecast for the whole day)
-~~- Leave out the location if not specified in the question
+- ~~Leave out the location if not specified in the question~~
 
