@@ -46,6 +46,12 @@ At the moment you can ask for the current weather, the temperature and the weath
 - *Regnet es in Berlin und Frankfurt?*
 - *Wie warm ist es jetzt?*
 
+### This Version
+- forked from https://github.com/MrJohnZoidberg/Snips-Wetter (after python3 conversion)
+- added in modifications by https://github.com/seiichiro0185 to work well with the current version of snips-voice-platform (0.61.1)
+- added in changes made by https://github.com/FBrahe/Wetter-snips-0.61.1 to ask for the weather of tomorrow and so on
+- then I started adding to it and rewriting stuff
+
 ## Todo
 - Get it to give the weather for morning, midday or evening for specific days
 - Fix bug where it can't respond to the weather of today shortly before midnight
