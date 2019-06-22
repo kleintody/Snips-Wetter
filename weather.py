@@ -178,11 +178,14 @@ class Weather:
             return weatherforecast
         else:
             try:
+                print(request["grain"])
                 if request["type"] == RequestType.FIXED:
                     if request["grain"] == Grain.DAY:
                         return self.get_weather_fixed_day(request, weatherforecast[request["startdate"]])
                     elif request["grain"] == Grain.HOUR:
                         return self.get_weather_fixed_hour(request, weatherforecast[request["startdate"]])
+                    elif request["grain"] == Grain.WEEK:
+                        return {'rc': 4}
                 elif request["type"] == RequestType.INTERVAL: 
                     if request["grain"] == Grain.DAY:
                         return {'rc': 4}
