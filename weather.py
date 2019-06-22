@@ -77,11 +77,19 @@ class Weather:
             response = self.error_response(weather_forecast)
         else:
             day_string=self.day(weather_forecast)
-            response = "Wetter {2} {1}: {0}.".format(
+            request = weather_forecast["request"]
+            if request["type"] == RequestType.FIXED and request["grain"] == Grain.DAY:
+                response = "Wetter {2} {1}: {0}.".format(
                 weather_forecast["mainCondition"],
                 weather_forecast["inLocation"],
                 day_string)
-            response = self.add_warning_if_needed(response, weather_forecast)
+                response = self.add_warning_if_needed(response, weather_forecast)
+            elif request["type"] == RequestType.FIXED and request["grain"] == Grain.HOUR:
+                response = "Wetter {2} um {3} {1}: {0}.".format(
+                weather_forecast["mainCondition"],
+                weather_forecast["inLocation"],
+                day_string,
+                weather_forecast["requested_time"])
         return response
 
     # function that is called from searchWeatherForecastTemperature
@@ -96,22 +104,31 @@ class Weather:
             response = self.error_response(weather_forecast)
         else:
             day_string=self.day(weather_forecast)
-            if weather_forecast["time_difference"]==0:
-                response = ("{0} hat es aktuell {1} Grad. "
-                            "Heute wird die Höchsttemperatur {2} Grad sein "
+            request = weather_forecast["request"]
+            if request["type"] == RequestType.FIXED and request["grain"] == Grain.DAY:
+                if weather_forecast["time_difference"]==0:
+                    response = ("{0} hat es aktuell {1} Grad. "
+                                "Heute wird die Höchsttemperatur {2} Grad sein "
+                                "und die Tiefsttemperatur {3} Grad.").format(
+                        weather_forecast["inLocation"] if weather_forecast["inLocation"] != "" else "Hier",
+                        weather_forecast["temperature"],
+                        weather_forecast["temperatureMax"],
+                        weather_forecast["temperatureMin"])
+                else:
+                    response = ("{4} wird die Höchsttemperatur {2} Grad sein "
                             "und die Tiefsttemperatur {3} Grad.").format(
-                    weather_forecast["inLocation"] if weather_forecast["inLocation"] != "" else "Hier",
+                    weather_forecast["inLocation"],
                     weather_forecast["temperature"],
                     weather_forecast["temperatureMax"],
-                    weather_forecast["temperatureMin"])
-            else:
-                response = ("{4} wird die Höchsttemperatur {2} Grad sein "
-                        "und die Tiefsttemperatur {3} Grad.").format(
+                    weather_forecast["temperatureMin"],
+                    day_string)
+            elif request["type"] == RequestType.FIXED and request["grain"] == Grain.HOUR:
+                response = ("{2} um {3} wird es {0} {1} Grad {4}.").format(
                 weather_forecast["inLocation"],
                 weather_forecast["temperature"],
-                weather_forecast["temperatureMax"],
-                weather_forecast["temperatureMin"],
-                day_string)
+                day_string,
+                weather_forecast["requested_time"],
+                request["requested"] if request["requested"] != "" else "haben")
         return response
 
     # function getting and parsing output from open weather map
@@ -137,19 +154,19 @@ class Weather:
             weather = {}
             for key,forecast in forecasts.items():
                 weather[key] = {
-                                    "rc": 0,
-                                    "type": "weather",
-                                    "date": datetime.strptime(key, "%Y-%m-%d").date(),
-                                    "location": location,
-                                    "time": [datetime.strptime(x, "%H:%M:%S").time() for x in [x["dt_txt"].split(" ")[1] for x in forecast]],
-                                    "temperature": [x["main"]["temp"] for x in forecast],
-                                    "weather condition": [x["weather"][0]["main"] for x in forecast],
-                                    "weather description": [x["weather"][0]["description"] for x in forecast],
-                                    "pressure": [x["main"]["pressure"] for x in forecast],
-                                    "humidity": [x["main"]["humidity"] for x in forecast],
-                                    "wind speed": [x["wind"]["speed"] for x in forecast],
-                                    "wind direction": [x["wind"]["deg"] for x in forecast]
-                                   }
+                                "rc": 0,
+                                "type": "weather",
+                                "date": datetime.strptime(key, "%Y-%m-%d").date(),
+                                "location": location,
+                                "time": [datetime.strptime(x, "%H:%M:%S").time() for x in [x["dt_txt"].split(" ")[1] for x in forecast]],
+                                "temperature": [x["main"]["temp"] for x in forecast],
+                                "weather condition": [x["weather"][0]["main"] for x in forecast],
+                                "weather description": [x["weather"][0]["description"] for x in forecast],
+                                "pressure": [x["main"]["pressure"] for x in forecast],
+                                "humidity": [x["main"]["humidity"] for x in forecast],
+                                "wind speed": [x["wind"]["speed"] for x in forecast],
+                                "wind direction": [x["wind"]["deg"] for x in forecast]
+                               }
             return weather
         except (requests.exceptions.ConnectionError, ValueError):
             return {'rc': 1}  # Error: No internet connection
@@ -228,34 +245,35 @@ class Weather:
 
     def parse_intent_request(self, intent_message):
         # Parse the query slots
-        request = { "type": RequestType.FIXED, "grain": Grain.DAY, "startdate": datetime.now().strftime("%Y-%m-%d"), "enddate": "", "starttime": "", "endtime": "", "location": ""}
+        request = { "type": RequestType.FIXED, "grain": Grain.DAY, "startdate": datetime.now().strftime("%Y-%m-%d"), "enddate": "", "starttime": "", "endtime": "", "location": "", "requested": ""}
         locations = []
-
-        for (slot_value, slot) in intent_message.slots.items():
-            if slot_value not in ['forecast_condition_name', 'forecast_start_date_time',
-                                  'forecast_item', 'forecast_temperature_name']:
-                locations.append(slot[0].slot_value.value)
-            elif slot_value == 'forecast_start_date_time':
-                start_date_time = intent_message.slots.forecast_start_date_time.first()
-                if type(start_date_time) is hermes_slots.InstantTimeValue:
-                    request["type"] = RequestType.FIXED
-                    request["startdate"] = start_date_time.value.split(' ')[0]
-                    request["grain"] = start_date_time.grain
-                    if request["grain"] == Grain.HOUR:
-                        request["starttime"] = start_date_time.value.split(' ')[1]
-                elif type(intent_message.slots.forecast_start_date_time.first()) is hermes_slots.TimeIntervalValue:
-                    request["type"] = RequestType.INTERVAL
-                    request["startdate"] = intent_message.slots.forecast_start_date_time.first().from_date.split(' ')[0]
-                    request["starttime"] = intent_message.slots.forecast_start_date_time.first().from_date.split(' ')[1]
-                    request["enddate"] = intent_message.slots.forecast_start_date_time.first().to_date.split(' ')[0]
-                    request["endtime"] = intent_message.slots.forecast_start_date_time.first().to_date.split(' ')[1]
-                    if request["startdate"] == request["enddate"]:
-                        request["grain"] == Grain.HOUR
-                    else:
-                        request["grain"] == Grain.DAY
-        location_objects = [loc_obj for loc_obj in locations if loc_obj is not None]
-        if location_objects:
-            request["location"] = location_objects[0].value
+        
+        if intent_message.slots.forecast_start_date_time.first() is not None:
+            start_date_time = intent_message.slots.forecast_start_date_time.first()
+            if type(start_date_time) is hermes_slots.InstantTimeValue:
+                request["type"] = RequestType.FIXED
+                request["startdate"] = start_date_time.value.split(' ')[0]
+                request["grain"] = start_date_time.grain
+                if request["grain"] == Grain.HOUR:
+                    request["starttime"] = start_date_time.value.split(' ')[1]
+            elif type(intent_message.slots.forecast_start_date_time.first()) is hermes_slots.TimeIntervalValue:
+                request["type"] = RequestType.INTERVAL
+                request["startdate"] = intent_message.slots.forecast_start_date_time.first().from_date.split(' ')[0]
+                request["starttime"] = intent_message.slots.forecast_start_date_time.first().from_date.split(' ')[1]
+                request["enddate"] = intent_message.slots.forecast_start_date_time.first().to_date.split(' ')[0]
+                request["endtime"] = intent_message.slots.forecast_start_date_time.first().to_date.split(' ')[1]
+                if request["startdate"] == request["enddate"]:
+                    request["grain"] == Grain.HOUR
+                else:
+                    request["grain"] == Grain.DAY
+        elif intent_message.slots.forecast_locality.first() is not None:
+            request["location"] = intent_message.slots.forecast_locality.first().value
+        elif intent_message.slots.forecast_condition_name.first() is not None:
+            request["requested"] = intent_message.slots.forecast_condition_name.first().value
+        elif intent_message.slots.forecast_temperature_name.first() is not None:
+            request["requested"] = intent_message.slots.forecast_temperature_name.first().value
+        elif intent_message.slots.forecast_item.first() is not None:
+            request["requested"] = intent_message.slots.forecast_item.first().value
         return request
 
     def error_response(self, data):
