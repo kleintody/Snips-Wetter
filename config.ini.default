@@ -6,6 +6,6 @@ units=metric
 openweathermap_api_key=
 city=
 zipcode=
-country=
+country=DE
 lat=
 lon=
