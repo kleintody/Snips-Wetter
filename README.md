@@ -2,12 +2,16 @@
 This skill makes [Snips.ai](https://snips.ai/) say the weather. The weather
 forecasts come from [OpenWeatherMap](https://openweathermap.org/).
 
+## Found a bug?
+Just open an issue and supply me with the sentence that produced the bug. If you know where to find 
+the output of the snips skill server you can also add that, might help me find the bug faster.
+
 ## Installation
 **Important:** The following instructions assume that [Snips](https://snips.gitbook.io/documentation/snips-basics) is
 already configured and running on your device. [SAM](https://snips.gitbook.io/getting-started/installation) should
 also already be set up and connected to your device and your account.
 1. In the German [skill store](https://console.snips.ai/) add the
-skill `Wetter` (by domi; [this](https://console.snips.ai/app-editor/bundle_7ZYEq522Ang)) to
+skill `Wetter` (by daenara; [this](https://console.snips.ai/store/de/skill_Ya9gVa0eg0o)) to
 your *German* assistant.
 
 2. Go to the [OpenWeatherMap](https://openweathermap.org/) website and create
@@ -21,11 +25,19 @@ Copy this one.
     ```bash
     sam install assistant
     ```
-    You will be asked to enter two values:
+    You will be asked to enter a few values:
+	- `detail`
+		Snips-Wetter provides more detailed weather reports if this is True
     - `openweathermap_api_key`
         Here you (copy and) paste the key you generated before.
-    - `default_city`
+    - `city`
         This is the location that is used when no location has been said, e.g. Berlin (without quotes).
+	- `zipcode`
+		Zipciode of your city (more precice in case of big cities)
+	- `country`
+		needed for the api to find a city by zipcode`
+	- `lat` and `lon`
+		latitude and longitude of where you live are the most precize way to get the weather
     
     This data is stored on your device.
     
@@ -35,31 +47,20 @@ Copy this one.
     ```
 
 ## Usage
-At the moment you can ask for the current weather, the temperature and the weather condition as well as the weather for a few days in advance.
+Just ask for a weather report, a specific condition, an item or a temperature, Snips-Wetter should be able to answer.
+Some aspects might only yield a general answer, thought. Since the free API of OpenWeatherMap only has data for 5 days, anything farther away will not be answered.
 
 ### Example sentences
 - *Kannst du mir sagen wie das Wetter ist?*
 - *Ich möchte das Wetter in Berlin wissen.*
 - *Regnet es in Frankfurt?*
 - *Wie viel Grad hat es draußen?*
-- *Wie wird das Wetter heute und morgen?*
-- *Regnet es in Berlin und Frankfurt?*
-- *Wie warm ist es jetzt?*
-
-### This Version
-- forked from https://github.com/MrJohnZoidberg/Snips-Wetter (after python3 conversion)
-- added in modifications by https://github.com/seiichiro0185 to work well with the current version of snips-voice-platform (0.61.1)
-- added in changes made by https://github.com/FBrahe/Wetter-snips-0.61.1 to ask for the weather of tomorrow and so on
-- then I started adding to it and rewriting stuff
+- *Brauche ich morgen einen Regenschirm?*
+- *Brauche ich am Sonntag Sonnencreme?*
 
 ## Todo
-- Get it to give the weather for morning, midday or evening for specific days
-- Fix bug where it can't respond to the weather of today shortly before midnight
-- Add in support for questions about needed items
-- Rework answers to take into account what exactly was asked
-- Add a few options for each answer to add variety
-- (maybe) Move weather forecast into an Object instead of a dict
-- ~~Output the temperature and or weather at a specific hour (forecast already done)~~
-- More complete weather report for the day (split up in morning, midday, evening instead of one condensed forecast for the whole day)
-- ~~Leave out the location if not specified in the question~~
-
+- Add another forecast provider
+- Force snips to adhere to my definition of morning, midday, evening and night
+- Get snips to answer questions containing the above (right now it answers only in general)
+- Add more specified answers when asking about a certain temperature (*Wie warm ist es draußen?* oder *Ist es heute kalt*)
+- Fully document this code
