@@ -1,10 +1,9 @@
 [global]
 detail=True
+units=metric
 
 [secret]
 openweathermap_api_key=
-
-[location]
 city=
 zipcode=
 country=

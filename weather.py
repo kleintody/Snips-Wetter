@@ -18,18 +18,18 @@ class Weather:
         except KeyError:
             self.weather_api_key = "XXXXXXXXXXXXXXXXXXXXX"
         try:
-            self.location = Location(config['location']['city'])
+            self.location = Location(config['secret']['city'])
         except KeyError:
             self.location = Location("Berlin")
         try:
-            zipcode = config['location']['zipcode']
-            country = config['location']['country']
+            zipcode = config['secret']['zipcode']
+            country = config['secret']['country']
             self.location.set_zipcode(zipcode, country)
         except:
             pass
         try:
-            lat = config['location']['lat']
-            lon = config['location']['lon']
+            lat = config['secret']['lat']
+            lon = config['secret']['lon']
             self.location.set_lat_and_lon(lat, lon)
         except:
             pass
