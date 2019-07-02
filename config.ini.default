@@ -1,5 +1,12 @@
 [global]
+detail=True
 
 [secret]
 openweathermap_api_key=
-default_city=
+
+[location]
+city=
+zipcode=
+country=
+lat=
+lon=
