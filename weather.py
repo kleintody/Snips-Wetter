@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 import datetime
 import locale
-from hermes_python.ontology.dialogue.slot import InstantTimeValue, TimeIntervalValue
+from hermes_python.ontology.slot import InstantTimeValue, TimeIntervalValue
 from hermes_python.ffi.ontology import Grain
 from weather_logic import WeatherRequest, DateType, ForecastType, WeatherForecast, WeatherReport, Location
 import copy
